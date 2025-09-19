@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>End of Shift Handover</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
+  table { 
+    width: 600px;               /* standard email width */
+    border-collapse: collapse; 
+    margin-bottom: 10px; 
+    table-layout: fixed;         /* prevent stretching */
+    word-wrap: break-word;       /* break long text */
+    font-size: 13px;             /* standard font size */
+  }
+  th, td { 
+    border: 1px solid #ccc; 
+    padding: 8px;               /* smaller padding for compact size */
+  }
+  th.section-title { background-color: #C39BD3; text-align: center; color: #000; font-size: 16px; font-weight: bold; }
+  th.table-header { background-color: #f0f0f0; text-align: left; color: #000; font-weight: bold; }
+  td { text-align: left; }
+  .add-row { margin-top: 5px; padding: 6px 12px; background-color: #C39BD3; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+  .copy-btn, .send-btn { padding: 10px 18px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; margin-right: 10px; }
+  .copy-btn { background-color: #0288d1; }
+  .send-btn { background-color: #388e3c; }
+  #preview { margin-top: 30px; padding: 20px; background: white; border: 1px solid #ccc; border-radius: 6px; max-width: 620px; }
+  label { font-weight: bold; }
+  select, input[type=text] { margin-bottom: 20px; padding: 5px; font-size: 14px; }
+</style>
+</head>
+<body>
+<h1>End of Shift Handover</h1>
+
+<label for="senderName">Select Sender / Regards:</label>
+<select id="senderName">
+  <option value="Sankarshan Naik">Sankarshan Naik</option>
+  <option value="Mitali Mokal">Mitali Mokal</option>
+  <option value="Pratik Pawar">Pratik Pawar</option>
+  <option value="Chandrasekhar Nookala">Chandrasekhar Nookala</option>
+  <option value="Other">Other (Type below)</option>
+</select>
+<br>
+<input type="text" id="customSender" placeholder="Enter your name if 'Other' selected" style="display:none; width:250px;">
+
+<!-- TOP DMA Table -->
+<table id="topDmaTable">
+  <tr><th colspan="2" class="section-title">TOP DMA</th></tr>
+  <tr><th class="table-header">Ticket Link</th><th class="table-header">Description</th></tr>
+  <tr><td><input type="text" placeholder="Ticket link"></td><td><input type="text" placeholder="Description"></td></tr>
+</table>
+<button class="add-row" onclick="addRow('topDmaTable')">+ Add TOP DMA</button>
+
+<!-- Other Outstanding Issues Table -->
+<table id="otherIssuesTable">
+  <tr><th colspan="2" class="section-title">Other Outstanding Issues</th></tr>
+  <tr><th class="table-header">Ticket Link</th><th class="table-header">Description</th></tr>
+  <tr><td><input type="text" placeholder="Ticket link"></td><td><input type="text" placeholder="Description"></td></tr>
+</table>
+<button class="add-row" onclick="addRow('otherIssuesTable')">+ Add Other Issue</button>
+
+<br>
+<button class="copy-btn" onclick="generateAndCopy()">📋 Copy Handover Email</button>
+<button class="send-btn" onclick="sendViaGmail()">📧 Send via Gmail</button>
+
+<div id="preview"></div>
+
+<script>
+const senderSelect = document.getElementById("senderName");
+const customSender = document.getElementById("customSender");
+
+senderSelect.addEventListener("change", () => {
+  customSender.style.display = senderSelect.value === "Other" ? "inline-block" : "none";
+});
+
+function addRow(tableId) {
+  const table = document.getElementById(tableId);
+  let row = table.insertRow();
+  row.insertCell(0).innerHTML = '<input type="text" placeholder="Ticket link">';
+  row.insertCell(1).innerHTML = '<input type="text" placeholder="Description">';
+}
+
+function getTableHtmlWithValues(tableId) {
+  const table = document.getElementById(tableId);
+  const clone = table.cloneNode(true);
+  const inputs = clone.querySelectorAll('input');
+  inputs.forEach(input => {
+    const td = input.parentNode;
+    td.innerHTML = input.value || '-';
+  });
+  return clone.outerHTML;
+}
+
+function generateAndCopy() {
+  const sender = senderSelect.value === "Other" ? customSender.value.trim() || "Your Name" : senderSelect.value;
+  let html = "Hello Team,<br>Here's the End of shift update for today's date:<br><br>";
+  html += getTableHtmlWithValues("topDmaTable");
+  html += "<br>";
+  html += getTableHtmlWithValues("otherIssuesTable");
+  html += "<br>Regards,<br>" + sender;
+
+  document.getElementById("preview").innerHTML = "<h2>Preview:</h2>" + html;
+
+  if(navigator.clipboard) {
+    navigator.clipboard.write([
+      new ClipboardItem({'text/html': new Blob([html], {type: 'text/html'})})
+    ]).then(()=> alert("Handover copied! ✅ Paste into Gmail/Outlook."))
+    .catch(err => alert("Clipboard copy failed: " + err));
+  } else {
+    alert("Clipboard API not supported. Use a modern browser.");
+  }
+}
+
+function sendViaGmail() {
+  const sender = senderSelect.value === "Other" ? customSender.value.trim() || "Your Name" : senderSelect.value;
+  const subject = encodeURIComponent("End of Shift Handover - " + sender);
+  let htmlBody = "Hello Team,<br>Here's the End of shift update for today's date:<br><br>";
+  htmlBody += getTableHtmlWithValues("topDmaTable");
+  htmlBody += "<br>";
+  htmlBody += getTableHtmlWithValues("otherIssuesTable");
+  htmlBody += "<br>Regards,<br>" + sender;
+
+  const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&su=" + subject + "&body=" + encodeURIComponent(htmlBody);
+  window.open(gmailUrl, '_blank');
+}
+</script>
+</body>
+</html>
