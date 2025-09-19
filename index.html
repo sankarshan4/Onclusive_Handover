@@ -20,9 +20,10 @@
   .btn { margin-top: 5px; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
   .add-row { background-color: #C39BD3; color: #fff; }
   .undo-row { background-color: #e74c3c; color: #fff; margin-left: 5px; }
-  .copy-btn, .send-btn { padding: 10px 18px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; margin-right: 10px; }
+  .copy-btn, .send-btn, .save-btn { padding: 10px 18px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; margin-right: 10px; }
   .copy-btn { background-color: #0288d1; }
   .send-btn { background-color: #388e3c; }
+  .save-btn { background-color: #ff9800; }
   #preview { margin-top: 30px; padding: 20px; background: white; border: 1px solid #ccc; border-radius: 6px; max-width: 620px; }
   label { font-weight: bold; }
   select, input[type=text] { margin-bottom: 20px; padding: 5px; font-size: 14px; }
@@ -31,16 +32,27 @@
 <body>
 <h1>End of Shift Handover</h1>
 
+<!-- Sender -->
 <label for="senderName">Select Sender / Regards:</label>
 <select id="senderName">
   <option value="Sankarshan Naik">Sankarshan Naik</option>
-  <option value="Chandrasekhar Nookala">Chandrasekhar Nookala</option>
-  <option value="Pratik Pawar">Pratik Pawar</option>
   <option value="Mitali Mokal">Mitali Mokal</option>
+  <option value="Pratik Pawar">Pratik Pawar</option>
+  <option value="Chandrasekhar Nookala">Chandrasekhar Nookala</option>
   <option value="Other">Other (Type below)</option>
 </select>
 <br>
 <input type="text" id="customSender" placeholder="Enter your name if 'Other' selected" style="display:none; width:250px;">
+
+<!-- Shift Selector -->
+<br>
+<label for="shiftSelect">Select Shift:</label>
+<select id="shiftSelect">
+  <option value="Morning">Morning Shift</option>
+  <option value="Afternoon">Afternoon Shift</option>
+  <option value="Night">Night Shift</option>
+</select>
+<br><br>
 
 <!-- TOP DMA Table -->
 <table id="topDmaTable">
@@ -63,12 +75,14 @@
 <br>
 <button class="copy-btn" onclick="generateAndCopy()">📋 Copy Handover Email</button>
 <button class="send-btn" onclick="sendViaGmail()">📧 Send via Gmail</button>
+<button class="save-btn" onclick="saveData()">💾 Save</button>
 
 <div id="preview"></div>
 
 <script>
 const senderSelect = document.getElementById("senderName");
 const customSender = document.getElementById("customSender");
+const shiftSelect = document.getElementById("shiftSelect");
 
 senderSelect.addEventListener("change", () => {
   customSender.style.display = senderSelect.value === "Other" ? "inline-block" : "none";
@@ -101,9 +115,32 @@ function getTableHtmlWithValues(tableId) {
   return clone.outerHTML;
 }
 
+function getTableData(tableId) {
+  const table = document.getElementById(tableId);
+  let data = [];
+  for (let i = 2; i < table.rows.length; i++) {
+    const row = table.rows[i];
+    const link = row.cells[0].querySelector("input").value;
+    const desc = row.cells[1].querySelector("input").value;
+    data.push({ link, desc });
+  }
+  return data;
+}
+
+function setTableData(tableId, data) {
+  const table = document.getElementById(tableId);
+  while (table.rows.length > 2) table.deleteRow(-1); // clear rows
+  data.forEach(item => {
+    let row = table.insertRow();
+    row.insertCell(0).innerHTML = `<input type="text" value="${item.link}" placeholder="Ticket link">`;
+    row.insertCell(1).innerHTML = `<input type="text" value="${item.desc}" placeholder="Description">`;
+  });
+}
+
 function generateAndCopy() {
   const sender = senderSelect.value === "Other" ? customSender.value.trim() || "Your Name" : senderSelect.value;
-  let html = "Hello Team,<br>Here's the End of shift update for today's date:<br><br>";
+  const shift = shiftSelect.value;
+  let html = `Hello Team,<br>Here's the End of shift update for today's date (${shift}):<br><br>`;
   html += getTableHtmlWithValues("topDmaTable");
   html += "<br>";
   html += getTableHtmlWithValues("otherIssuesTable");
@@ -116,15 +153,14 @@ function generateAndCopy() {
       new ClipboardItem({'text/html': new Blob([html], {type: 'text/html'})})
     ]).then(()=> alert("Handover copied! ✅ Paste into Gmail/Outlook."))
     .catch(err => alert("Clipboard copy failed: " + err));
-  } else {
-    alert("Clipboard API not supported. Use a modern browser.");
   }
 }
 
 function sendViaGmail() {
   const sender = senderSelect.value === "Other" ? customSender.value.trim() || "Your Name" : senderSelect.value;
-  const subject = encodeURIComponent("End of Shift Handover - " + sender);
-  let htmlBody = "Hello Team,<br>Here's the End of shift update for today's date:<br><br>";
+  const shift = shiftSelect.value;
+  const subject = encodeURIComponent(`End of Shift Handover (${shift}) - ${sender}`);
+  let htmlBody = `Hello Team,<br>Here's the End of shift update for today's date (${shift}):<br><br>`;
   htmlBody += getTableHtmlWithValues("topDmaTable");
   htmlBody += "<br>";
   htmlBody += getTableHtmlWithValues("otherIssuesTable");
@@ -133,6 +169,40 @@ function sendViaGmail() {
   const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&su=" + subject + "&body=" + encodeURIComponent(htmlBody);
   window.open(gmailUrl, '_blank');
 }
+
+function saveData() {
+  const sender = senderSelect.value === "Other" ? customSender.value.trim() : senderSelect.value;
+  const shift = shiftSelect.value;
+  const data = {
+    sender: sender,
+    shift: shift,
+    topDma: getTableData("topDmaTable"),
+    otherIssues: getTableData("otherIssuesTable")
+  };
+  localStorage.setItem("handoverData", JSON.stringify(data));
+  alert("💾 Handover saved locally!");
+}
+
+window.onload = () => {
+  const saved = localStorage.getItem("handoverData");
+  if (saved) {
+    const data = JSON.parse(saved);
+    if (data.sender) {
+      if ([...senderSelect.options].some(o => o.value === data.sender)) {
+        senderSelect.value = data.sender;
+      } else {
+        senderSelect.value = "Other";
+        customSender.style.display = "inline-block";
+        customSender.value = data.sender;
+      }
+    }
+    if (data.shift) {
+      shiftSelect.value = data.shift;
+    }
+    setTableData("topDmaTable", data.topDma);
+    setTableData("otherIssuesTable", data.otherIssues);
+  }
+};
 </script>
 </body>
 </html>
