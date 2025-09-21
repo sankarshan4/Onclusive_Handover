@@ -2,155 +2,242 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Handover Template</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shift Handover</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; font-size: 14px; }
-    h2 { text-align: center; color: black; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #c8a2f0; color: black; }
-    button { margin: 5px 0; padding: 6px 12px; border: none; border-radius: 4px; background: #6c63ff; color: white; cursor: pointer; }
-    button:hover { background: #574b90; }
-    #preview { border: 1px solid #ccc; padding: 10px; margin-top: 20px; background: #fafafa; }
-    select { padding: 4px; margin-bottom: 10px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: black;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+      word-break: break-word;
+    }
+    th {
+      background-color: #d8b9f2; /* Medium purple */
+      color: black;
+      text-align: center;
+    }
+    button {
+      margin: 5px 0;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    select, input[type="text"] {
+      margin: 5px 0;
+      padding: 5px;
+      font-size: 14px;
+    }
+    #preview {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+      background-color: #f9f9f9;
+    }
   </style>
 </head>
 <body>
 
   <h2>Shift Handover</h2>
 
-  <label for="shift">Select Shift:</label>
-  <select id="shift">
-    <option value="Morning">Morning Shift</option>
-    <option value="Afternoon">Afternoon Shift</option>
-    <option value="Night">Night Shift</option>
+  <!-- Shift selector -->
+  <label for="shiftSelect"><b>Select Shift:</b></label>
+  <select id="shiftSelect">
+    <option value="Morning">Morning</option>
+    <option value="Afternoon">Afternoon</option>
+    <option value="Night">Night</option>
   </select>
-
   <br><br>
 
-  <label for="sender">Select Sender:</label>
-  <select id="sender">
-    <option value="Sankarshan Naik">Sankarshan Naik</option>
-    <option value="Mitali Mokal">Mitali Mokal</option>
+  <!-- Sender selector -->
+  <label for="senderSelect"><b>Select Sender:</b></label>
+  <select id="senderSelect" onchange="toggleCustomSender()">
+     <option value="Sankarshan Naik">Sankarshan Naik</option>
+  <option value="Mitali Mokal">Mitali Mokal</option>
   <option value="Pratik Pawar">Pratik Pawar</option>
   <option value="Chandrasekhar Nookala">Chandrasekhar Nookala</option>
-
+  <option value="Aditi Bafna">Aditi Bafna</option>
+    <option value="Other">Other (Type Name)</option>
   </select>
+  <input type="text" id="customSender" placeholder="Enter name" style="display:none;">
+  <br><br>
 
+  <!-- TOP DMA Table -->
   <h2>TOP DMA</h2>
-  <table id="dmaTable">
+  <table id="topDmaTable">
     <thead>
       <tr>
+        <th></th>
         <th>Ticket Link</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
-  <button onclick="addTopDmaRow()">Add Top DMA</button>
-  <button onclick="undoLastChange('dmaTable')">Undo Last Change</button>
+  <button onclick="addRow('topDmaTable')">Add TOP DMA Row</button>
+  <button onclick="undoRow('topDmaTable')">Undo Last TOP DMA Row</button>
 
+  <!-- Other Outstanding Issues Table -->
   <h2>Other Outstanding Issues</h2>
-  <table id="outstandingTable">
+  <table id="otherIssuesTable">
     <thead>
       <tr>
+        <th></th>
         <th>Ticket Link</th>
         <th>Description</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
-  <button onclick="addOutstandingRow()">Add Outstanding Issue</button>
-  <button onclick="undoLastChange('outstandingTable')">Undo Last Change</button>
+  <button onclick="addRow('otherIssuesTable')">Add Other Issue Row</button>
+  <button onclick="undoRow('otherIssuesTable')">Undo Last Other Issue Row</button>
 
   <br><br>
   <button onclick="previewHandover()">Preview</button>
-  <button onclick="copyToClipboard()">Copy Handover</button>
+  <button onclick="copyHandover()">Copy Handover</button>
 
   <div id="preview"></div>
 
   <script>
-    let history = { dmaTable: [], outstandingTable: [] };
+    // Date formatter: 21st-September-2025
+    function formatDate() {
+      const date = new Date();
+      const day = date.getDate();
 
-    // Add new row for Top DMA
-    function addTopDmaRow() {
-      const table = document.getElementById("dmaTable").getElementsByTagName('tbody')[0];
-      saveHistory("dmaTable");
-      const newRow = table.insertRow();
+      const suffix = (day % 10 === 1 && day !== 11) ? "st" :
+                     (day % 10 === 2 && day !== 12) ? "nd" :
+                     (day % 10 === 3 && day !== 13) ? "rd" : "th";
 
-      const linkCell = newRow.insertCell(0);
-      const descCell = newRow.insertCell(1);
+      const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const month = months[date.getMonth()];
+      const year = date.getFullYear();
 
-      linkCell.innerHTML = '<input type="text" placeholder="Enter Ticket Link" onblur="makeLink(this)">';
-      descCell.innerHTML = '<input type="text" placeholder="Enter Description">';
+      return `${day}${suffix}-${month}-${year}`;
     }
 
-    // Add new row for Outstanding Issues
-    function addOutstandingRow() {
-      const table = document.getElementById("outstandingTable").getElementsByTagName('tbody')[0];
-      saveHistory("outstandingTable");
-      const newRow = table.insertRow();
+    // Track last added rows for undo
+    const history = {
+      topDmaTable: [],
+      otherIssuesTable: []
+    };
 
-      const linkCell = newRow.insertCell(0);
-      const descCell = newRow.insertCell(1);
+    function addRow(tableId) {
+      const table = document.getElementById(tableId).querySelector("tbody");
+      const rowCount = table.rows.length + 1;
+      const row = table.insertRow();
 
-      linkCell.innerHTML = '<input type="text" placeholder="Enter Ticket Link" onblur="makeLink(this)">';
-      descCell.innerHTML = '<input type="text" placeholder="Enter Description">';
+      const cell1 = row.insertCell(0);
+      const cell2 = row.insertCell(1);
+      const cell3 = row.insertCell(2);
+
+      cell1.textContent = rowCount;
+      cell2.innerHTML = '<input type="url" placeholder="Enter ticket link">';
+      cell3.innerHTML = '<input type="text" placeholder="Enter description">';
+
+      history[tableId].push(row);
     }
 
-    // Convert ticket link to clickable hyperlink
-    function makeLink(input) {
-      if (input.value.trim() !== "") {
-        const url = input.value.trim();
-        input.parentElement.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
+    function undoRow(tableId) {
+      const lastRow = history[tableId].pop();
+      if (lastRow) {
+        lastRow.remove();
       }
     }
 
-    // Save table state for undo
-    function saveHistory(tableId) {
-      const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-      history[tableId].push(table.innerHTML);
-    }
-
-    // Undo last change
-    function undoLastChange(tableId) {
-      if (history[tableId].length > 0) {
-        const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
-        table.innerHTML = history[tableId].pop();
+    function toggleCustomSender() {
+      const senderSelect = document.getElementById("senderSelect");
+      const customSender = document.getElementById("customSender");
+      if (senderSelect.value === "Other") {
+        customSender.style.display = "inline-block";
+      } else {
+        customSender.style.display = "none";
       }
     }
 
-    // Preview the handover
     function previewHandover() {
-      const shift = document.getElementById("shift").value;
-      const sender = document.getElementById("sender").value;
-      const dmaTable = document.getElementById("dmaTable").outerHTML;
-      const outstandingTable = document.getElementById("outstandingTable").outerHTML;
+      const today = formatDate();
+      const shift = document.getElementById("shiftSelect").value;
+      const senderSelect = document.getElementById("senderSelect").value;
+      const sender = senderSelect === "Other" ? document.getElementById("customSender").value : senderSelect;
 
-      const today = new Date().toLocaleDateString();
+      let topDmaRows = "";
+      document.querySelectorAll("#topDmaTable tbody tr").forEach((row, index) => {
+        const ticketLink = row.cells[1].querySelector("input").value;
+        const description = row.cells[2].querySelector("input").value;
+        topDmaRows += `<tr>
+          <td>${index + 1}</td>
+          <td><a href="${ticketLink}" target="_blank">${ticketLink}</a></td>
+          <td>${description}</td>
+        </tr>`;
+      });
 
-      const content = `
+      let otherRows = "";
+      document.querySelectorAll("#otherIssuesTable tbody tr").forEach((row, index) => {
+        const ticketLink = row.cells[1].querySelector("input").value;
+        const description = row.cells[2].querySelector("input").value;
+        otherRows += `<tr>
+          <td>${index + 1}</td>
+          <td><a href="${ticketLink}" target="_blank">${ticketLink}</a></td>
+          <td>${description}</td>
+        </tr>`;
+      });
+
+      const previewDiv = document.getElementById("preview");
+      previewDiv.innerHTML = `
         <p>Hello Team,</p>
-        <p>Here's the End of shift update for ${shift} on <b>${today}</b>:</p>
-        ${dmaTable}
-        ${outstandingTable}
+        <p>Here's the End of shift update for <b>${today}</b> (${shift} Shift):</p>
+
+        <h3 style="text-align:center; color:black;">TOP DMA</h3>
+        <table border="1" style="width:100%; border-collapse:collapse; font-size:14px;">
+          <tr style="background-color:#d8b9f2; color:black; text-align:center;">
+            <th>#</th>
+            <th>Ticket Link</th>
+            <th>Description</th>
+          </tr>
+          ${topDmaRows || '<tr><td colspan="3">No entries</td></tr>'}
+        </table>
+
+        <h3 style="text-align:center; color:black;">Other Outstanding Issues</h3>
+        <table border="1" style="width:100%; border-collapse:collapse; font-size:14px;">
+          <tr style="background-color:#d8b9f2; color:black; text-align:center;">
+            <th>#</th>
+            <th>Ticket Link</th>
+            <th>Description</th>
+          </tr>
+          ${otherRows || '<tr><td colspan="3">No entries</td></tr>'}
+        </table>
+
         <p>Regards,<br>${sender}</p>
       `;
-
-      document.getElementById("preview").innerHTML = content;
     }
 
-    // Copy to clipboard
-    function copyToClipboard() {
-      previewHandover();
-      const range = document.createRange();
-      range.selectNode(document.getElementById("preview"));
-      window.getSelection().removeAllRanges();
-      window.getSelection().addRange(range);
+    function copyHandover() {
+      const previewContent = document.getElementById("preview").innerHTML;
+      const tempEl = document.createElement("textarea");
+      tempEl.innerHTML = previewContent;
+      document.body.appendChild(tempEl);
+      tempEl.select();
       document.execCommand("copy");
-      window.getSelection().removeAllRanges();
+      document.body.removeChild(tempEl);
       alert("Handover copied to clipboard!");
     }
   </script>
+
 </body>
 </html>
