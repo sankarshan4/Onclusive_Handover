@@ -1,208 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>End of Shift Handover</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 20px; background: #f9f9f9; }
-  table { 
-    width: 600px; 
-    border-collapse: collapse; 
-    margin-bottom: 10px; 
-    table-layout: fixed; 
-    word-wrap: break-word; 
-    font-size: 13px; 
-  }
-  th, td { border: 1px solid #ccc; padding: 8px; }
-  th.section-title { background-color: #C39BD3; text-align: center; color: #000; font-size: 16px; font-weight: bold; }
-  th.table-header { background-color: #f0f0f0; text-align: left; color: #000; font-weight: bold; }
-  td { text-align: left; }
-  .btn { margin-top: 5px; padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
-  .add-row { background-color: #C39BD3; color: #fff; }
-  .undo-row { background-color: #e74c3c; color: #fff; margin-left: 5px; }
-  .copy-btn, .send-btn, .save-btn { padding: 10px 18px; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; margin-right: 10px; }
-  .copy-btn { background-color: #0288d1; }
-  .send-btn { background-color: #388e3c; }
-  .save-btn { background-color: #ff9800; }
-  #preview { margin-top: 30px; padding: 20px; background: white; border: 1px solid #ccc; border-radius: 6px; max-width: 620px; }
-  label { font-weight: bold; }
-  select, input[type=text] { margin-bottom: 20px; padding: 5px; font-size: 14px; }
-</style>
+  <meta charset="UTF-8">
+  <title>Handover Template</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; font-size: 14px; }
+    h2 { text-align: center; color: black; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #c8a2f0; color: black; }
+    button { margin: 5px 0; padding: 6px 12px; border: none; border-radius: 4px; background: #6c63ff; color: white; cursor: pointer; }
+    button:hover { background: #574b90; }
+    #preview { border: 1px solid #ccc; padding: 10px; margin-top: 20px; background: #fafafa; }
+    select { padding: 4px; margin-bottom: 10px; }
+  </style>
 </head>
 <body>
-<h1>End of Shift Handover</h1>
 
-<!-- Sender -->
-<label for="senderName">Select Sender / Regards:</label>
-<select id="senderName">
-  <option value="Sankarshan Naik">Sankarshan Naik</option>
-  <option value="Mitali Mokal">Mitali Mokal</option>
+  <h2>Shift Handover</h2>
+
+  <label for="shift">Select Shift:</label>
+  <select id="shift">
+    <option value="Morning">Morning Shift</option>
+    <option value="Afternoon">Afternoon Shift</option>
+    <option value="Night">Night Shift</option>
+  </select>
+
+  <br><br>
+
+  <label for="sender">Select Sender:</label>
+  <select id="sender">
+    <option value="Sankarshan Naik">Sankarshan Naik</option>
+    <option value="Mitali Mokal">Mitali Mokal</option>
   <option value="Pratik Pawar">Pratik Pawar</option>
   <option value="Chandrasekhar Nookala">Chandrasekhar Nookala</option>
-  <option value="Other">Other (Type below)</option>
-</select>
-<br>
-<input type="text" id="customSender" placeholder="Enter your name if 'Other' selected" style="display:none; width:250px;">
 
-<!-- Shift Selector -->
-<br>
-<label for="shiftSelect">Select Shift:</label>
-<select id="shiftSelect">
-  <option value="Morning">Morning Shift</option>
-  <option value="Afternoon">Afternoon Shift</option>
-  <option value="Night">Night Shift</option>
-</select>
-<br><br>
+  </select>
 
-<!-- TOP DMA Table -->
-<table id="topDmaTable">
-  <tr><th colspan="2" class="section-title">TOP DMA</th></tr>
-  <tr><th class="table-header">Ticket Link</th><th class="table-header">Description</th></tr>
-  <tr><td><input type="text" placeholder="Ticket link"></td><td><input type="text" placeholder="Description"></td></tr>
-</table>
-<button class="btn add-row" onclick="addRow('topDmaTable')">+ Add TOP DMA</button>
-<button class="btn undo-row" onclick="undoRow('topDmaTable')">↩ Undo</button>
+  <h2>TOP DMA</h2>
+  <table id="dmaTable">
+    <thead>
+      <tr>
+        <th>Ticket Link</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button onclick="addTopDmaRow()">Add Top DMA</button>
+  <button onclick="undoLastChange('dmaTable')">Undo Last Change</button>
 
-<!-- Other Outstanding Issues Table -->
-<table id="otherIssuesTable">
-  <tr><th colspan="2" class="section-title">Other Outstanding Issues</th></tr>
-  <tr><th class="table-header">Ticket Link</th><th class="table-header">Description</th></tr>
-  <tr><td><input type="text" placeholder="Ticket link"></td><td><input type="text" placeholder="Description"></td></tr>
-</table>
-<button class="btn add-row" onclick="addRow('otherIssuesTable')">+ Add Other Issue</button>
-<button class="btn undo-row" onclick="undoRow('otherIssuesTable')">↩ Undo</button>
+  <h2>Other Outstanding Issues</h2>
+  <table id="outstandingTable">
+    <thead>
+      <tr>
+        <th>Ticket Link</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <button onclick="addOutstandingRow()">Add Outstanding Issue</button>
+  <button onclick="undoLastChange('outstandingTable')">Undo Last Change</button>
 
-<br>
-<button class="copy-btn" onclick="generateAndCopy()">📋 Copy Handover Email</button>
-<button class="send-btn" onclick="sendViaGmail()">📧 Send via Gmail</button>
-<button class="save-btn" onclick="saveData()">💾 Save</button>
+  <br><br>
+  <button onclick="previewHandover()">Preview</button>
+  <button onclick="copyToClipboard()">Copy Handover</button>
 
-<div id="preview"></div>
+  <div id="preview"></div>
 
-<script>
-const senderSelect = document.getElementById("senderName");
-const customSender = document.getElementById("customSender");
-const shiftSelect = document.getElementById("shiftSelect");
+  <script>
+    let history = { dmaTable: [], outstandingTable: [] };
 
-senderSelect.addEventListener("change", () => {
-  customSender.style.display = senderSelect.value === "Other" ? "inline-block" : "none";
-});
+    // Add new row for Top DMA
+    function addTopDmaRow() {
+      const table = document.getElementById("dmaTable").getElementsByTagName('tbody')[0];
+      saveHistory("dmaTable");
+      const newRow = table.insertRow();
 
-function addRow(tableId) {
-  const table = document.getElementById(tableId);
-  let row = table.insertRow();
-  row.insertCell(0).innerHTML = '<input type="text" placeholder="Ticket link">';
-  row.insertCell(1).innerHTML = '<input type="text" placeholder="Description">';
-}
+      const linkCell = newRow.insertCell(0);
+      const descCell = newRow.insertCell(1);
 
-function undoRow(tableId) {
-  const table = document.getElementById(tableId);
-  if (table.rows.length > 3) { 
-    table.deleteRow(-1); // remove last row
-  } else {
-    alert("⚠ Cannot remove the first row.");
-  }
-}
+      linkCell.innerHTML = '<input type="text" placeholder="Enter Ticket Link" onblur="makeLink(this)">';
+      descCell.innerHTML = '<input type="text" placeholder="Enter Description">';
+    }
 
-function getTableHtmlWithValues(tableId) {
-  const table = document.getElementById(tableId);
-  const clone = table.cloneNode(true);
-  const inputs = clone.querySelectorAll('input');
-  inputs.forEach(input => {
-    const td = input.parentNode;
-    td.innerHTML = input.value || '-';
-  });
-  return clone.outerHTML;
-}
+    // Add new row for Outstanding Issues
+    function addOutstandingRow() {
+      const table = document.getElementById("outstandingTable").getElementsByTagName('tbody')[0];
+      saveHistory("outstandingTable");
+      const newRow = table.insertRow();
 
-function getTableData(tableId) {
-  const table = document.getElementById(tableId);
-  let data = [];
-  for (let i = 2; i < table.rows.length; i++) {
-    const row = table.rows[i];
-    const link = row.cells[0].querySelector("input").value;
-    const desc = row.cells[1].querySelector("input").value;
-    data.push({ link, desc });
-  }
-  return data;
-}
+      const linkCell = newRow.insertCell(0);
+      const descCell = newRow.insertCell(1);
 
-function setTableData(tableId, data) {
-  const table = document.getElementById(tableId);
-  while (table.rows.length > 2) table.deleteRow(-1); // clear rows
-  data.forEach(item => {
-    let row = table.insertRow();
-    row.insertCell(0).innerHTML = `<input type="text" value="${item.link}" placeholder="Ticket link">`;
-    row.insertCell(1).innerHTML = `<input type="text" value="${item.desc}" placeholder="Description">`;
-  });
-}
+      linkCell.innerHTML = '<input type="text" placeholder="Enter Ticket Link" onblur="makeLink(this)">';
+      descCell.innerHTML = '<input type="text" placeholder="Enter Description">';
+    }
 
-function generateAndCopy() {
-  const sender = senderSelect.value === "Other" ? customSender.value.trim() || "Your Name" : senderSelect.value;
-  const shift = shiftSelect.value;
-  let html = `Hello Team,<br>Here's the End of shift update for today's date (${shift}):<br><br>`;
-  html += getTableHtmlWithValues("topDmaTable");
-  html += "<br>";
-  html += getTableHtmlWithValues("otherIssuesTable");
-  html += "<br>Regards,<br>" + sender;
-
-  document.getElementById("preview").innerHTML = "<h2>Preview:</h2>" + html;
-
-  if(navigator.clipboard) {
-    navigator.clipboard.write([
-      new ClipboardItem({'text/html': new Blob([html], {type: 'text/html'})})
-    ]).then(()=> alert("Handover copied! ✅ Paste into Gmail/Outlook."))
-    .catch(err => alert("Clipboard copy failed: " + err));
-  }
-}
-
-function sendViaGmail() {
-  const sender = senderSelect.value === "Other" ? customSender.value.trim() || "Your Name" : senderSelect.value;
-  const shift = shiftSelect.value;
-  const subject = encodeURIComponent(`End of Shift Handover (${shift}) - ${sender}`);
-  let htmlBody = `Hello Team,<br>Here's the End of shift update for today's date (${shift}):<br><br>`;
-  htmlBody += getTableHtmlWithValues("topDmaTable");
-  htmlBody += "<br>";
-  htmlBody += getTableHtmlWithValues("otherIssuesTable");
-  htmlBody += "<br>Regards,<br>" + sender;
-
-  const gmailUrl = "https://mail.google.com/mail/?view=cm&fs=1&su=" + subject + "&body=" + encodeURIComponent(htmlBody);
-  window.open(gmailUrl, '_blank');
-}
-
-function saveData() {
-  const sender = senderSelect.value === "Other" ? customSender.value.trim() : senderSelect.value;
-  const shift = shiftSelect.value;
-  const data = {
-    sender: sender,
-    shift: shift,
-    topDma: getTableData("topDmaTable"),
-    otherIssues: getTableData("otherIssuesTable")
-  };
-  localStorage.setItem("handoverData", JSON.stringify(data));
-  alert("💾 Handover saved locally!");
-}
-
-window.onload = () => {
-  const saved = localStorage.getItem("handoverData");
-  if (saved) {
-    const data = JSON.parse(saved);
-    if (data.sender) {
-      if ([...senderSelect.options].some(o => o.value === data.sender)) {
-        senderSelect.value = data.sender;
-      } else {
-        senderSelect.value = "Other";
-        customSender.style.display = "inline-block";
-        customSender.value = data.sender;
+    // Convert ticket link to clickable hyperlink
+    function makeLink(input) {
+      if (input.value.trim() !== "") {
+        const url = input.value.trim();
+        input.parentElement.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
       }
     }
-    if (data.shift) {
-      shiftSelect.value = data.shift;
+
+    // Save table state for undo
+    function saveHistory(tableId) {
+      const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+      history[tableId].push(table.innerHTML);
     }
-    setTableData("topDmaTable", data.topDma);
-    setTableData("otherIssuesTable", data.otherIssues);
-  }
-};
-</script>
+
+    // Undo last change
+    function undoLastChange(tableId) {
+      if (history[tableId].length > 0) {
+        const table = document.getElementById(tableId).getElementsByTagName('tbody')[0];
+        table.innerHTML = history[tableId].pop();
+      }
+    }
+
+    // Preview the handover
+    function previewHandover() {
+      const shift = document.getElementById("shift").value;
+      const sender = document.getElementById("sender").value;
+      const dmaTable = document.getElementById("dmaTable").outerHTML;
+      const outstandingTable = document.getElementById("outstandingTable").outerHTML;
+
+      const today = new Date().toLocaleDateString();
+
+      const content = `
+        <p>Hello Team,</p>
+        <p>Here's the End of shift update for ${shift} on <b>${today}</b>:</p>
+        ${dmaTable}
+        ${outstandingTable}
+        <p>Regards,<br>${sender}</p>
+      `;
+
+      document.getElementById("preview").innerHTML = content;
+    }
+
+    // Copy to clipboard
+    function copyToClipboard() {
+      previewHandover();
+      const range = document.createRange();
+      range.selectNode(document.getElementById("preview"));
+      window.getSelection().removeAllRanges();
+      window.getSelection().addRange(range);
+      document.execCommand("copy");
+      window.getSelection().removeAllRanges();
+      alert("Handover copied to clipboard!");
+    }
+  </script>
 </body>
 </html>
